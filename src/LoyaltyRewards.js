@@ -5,7 +5,7 @@ const LoyaltyRewards = () => {
 	const [points, setPoints] = useState(0);
 	const [redeemEntries, setRedeemEntries] = useState([]);
 	const redeemVal = useRef(null);
-  const redeemAddVal = useRef(null);
+	const redeemAddVal = useRef(null);
 	useEffect(() => {
 		fetchUserPoints();
 		getRedeemed();
@@ -53,32 +53,32 @@ const LoyaltyRewards = () => {
 		try {
 			await axios.delete(
 				`https://cps714-backend.onrender.com/redeemed/${value}`
-      );
-      fetchUserPoints();
-      getRedeemed()
-      redeemVal.current.value = '';
-      console.log("deleted successfully");
+			);
+			fetchUserPoints();
+			getRedeemed();
+			redeemVal.current.value = "";
+			console.log("deleted successfully");
 		} catch (error) {
 			console.error("Error deleting: ", error);
 		}
-  };
-  
-  const addRedeemed = async (e) => {
-    e.preventDefault();
-    console.log("redeem val:", redeemAddVal.current.value);
-    try {
-      await axios.post(`https://cps714-backend.onrender.com/redeemed`, {
-        id: redeemAddVal.current.value,
-        reward_id: 1,
-        user_id: 1
-      });
-      fetchUserPoints();
-      getRedeemed();
-      redeemAddVal.current.value = '';
-    } catch (error) {
-      console.error("Error adding ", error)
-    }
-  }
+	};
+
+	const addRedeemed = async (e) => {
+		e.preventDefault();
+		console.log("redeem val:", redeemAddVal.current.value);
+		try {
+			await axios.post(`https://cps714-backend.onrender.com/redeemed`, {
+				id: redeemAddVal.current.value,
+				reward_id: 1,
+				user_id: 1,
+			});
+			fetchUserPoints();
+			getRedeemed();
+			redeemAddVal.current.value = "";
+		} catch (error) {
+			console.error("Error adding ", error);
+		}
+	};
 
 	return (
 		<div className="w-full mx-auto">
@@ -86,45 +86,39 @@ const LoyaltyRewards = () => {
 				<h2 className="text-2xl font-bold mb-4">Loyalty and Rewards Program</h2>
 				<div className="flex justify-between items-center mb-4">
 					<div>
-						<label
-							htmlFor="points"
-							className="block text-gray-700 font-medium mb-1"
-						>
-							Total Points
-						</label>
-						<input
-							id="points"
-							type="number"
-							value={points}
-							readOnly
-							className="bg-gray-100 border border-gray-300 rounded-md py-2 px-3 w-full"
-						/>
+						<div class="flex flex-col p-6 bg-white border border-gray-300 rounded-lg shadow">
+							<a href="#">
+								<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900">
+									Total Points
+								</h5>
+								<p class="font-semibold text-xl text-gray-700">{points}</p>
+							</a>
+							<div className="flex justify-between items-center space-x-2 pt-2">
+								<button
+									onClick={() => earnPoints(1)}
+									className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
+								>
+									Sign Up (10 Points)
+								</button>
+								<button
+									onClick={() => earnPoints(2)}
+									className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
+								>
+									Purchase (20 Points)
+								</button>
+								<button
+									onClick={() => earnPoints(3)}
+									className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
+								>
+									Refferal (30 Points)
+								</button>
+							</div>
+						</div>
 					</div>
 				</div>
 
 				{/* TO SHOW OFF SOME BACK END FEATURES */}
-				<div className="flex justify-between items-center">
-					<div className="space-x-2">
-						<button
-							onClick={() => earnPoints(1)}
-							className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
-						>
-							Sign Up (10 Points)
-						</button>
-						<button
-							onClick={() => earnPoints(2)}
-							className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
-						>
-							Purchase (20 Points)
-						</button>
-						<button
-							onClick={() => earnPoints(3)}
-							className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
-						>
-							Refferal (30 Points)
-						</button>
-					</div>
-				</div>
+				
 				<br />
 				<div className="flex flex-col justify-between items-start space-y-2">
 					<div>
@@ -170,7 +164,7 @@ const LoyaltyRewards = () => {
 						>
 							Add Redeem Entries
 						</label>
-						<form onSubmit={addRedeemed} className="space-y-2" >
+						<form onSubmit={addRedeemed} className="space-y-2">
 							<input
 								type="text"
 								name="Which item to add to redeem list"
