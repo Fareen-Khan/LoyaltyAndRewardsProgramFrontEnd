@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+"use client";
+
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
 const LoyaltyRewards = () => {
@@ -6,6 +8,7 @@ const LoyaltyRewards = () => {
 	const [redeemEntries, setRedeemEntries] = useState([]);
 	const redeemVal = useRef(null);
 	const redeemAddVal = useRef(null);
+
 	useEffect(() => {
 		fetchUserPoints();
 		getRedeemed();
@@ -15,7 +18,8 @@ const LoyaltyRewards = () => {
 		try {
 			const response = await axios.get(
 				"https://cps714-backend.onrender.com/points/1"
-			);
+      );
+      console.log(response.data.points);
 			setPoints(response.data.points);
 		} catch (error) {
 			console.error("Error fetching user points:", error);
@@ -49,7 +53,6 @@ const LoyaltyRewards = () => {
 	const deleteRedeemed = async (e) => {
 		e.preventDefault();
 		const value = redeemVal.current.value;
-		console.log(value);
 		try {
 			await axios.delete(
 				`https://cps714-backend.onrender.com/redeemed/${value}`
@@ -57,7 +60,7 @@ const LoyaltyRewards = () => {
 			fetchUserPoints();
 			getRedeemed();
 			redeemVal.current.value = "";
-			console.log("deleted successfully");
+			console.log("Deleted successfully");
 		} catch (error) {
 			console.error("Error deleting: ", error);
 		}
@@ -65,7 +68,6 @@ const LoyaltyRewards = () => {
 
 	const addRedeemed = async (e) => {
 		e.preventDefault();
-		console.log("redeem val:", redeemAddVal.current.value);
 		try {
 			await axios.post(`https://cps714-backend.onrender.com/redeemed`, {
 				id: redeemAddVal.current.value,
@@ -82,43 +84,48 @@ const LoyaltyRewards = () => {
 
 	return (
 		<div className="w-full mx-auto">
-			<div className="bg-white rounded-lg shadow-md p-6">
+			<div className="bg-white rounded-lg  p-6">
 				<h2 className="text-2xl font-bold mb-4">Loyalty and Rewards Program</h2>
 				<div className="flex justify-between items-center mb-4">
 					<div>
-						<div class="flex flex-col p-6 bg-white border border-gray-300 rounded-lg shadow">
-							<a href="#">
-								<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900">
-									Total Points
-								</h5>
-								<p class="font-semibold text-xl text-gray-700">{points}</p>
-							</a>
-							<div className="flex justify-between items-center space-x-2 pt-2">
-								<button
-									onClick={() => earnPoints(1)}
-									className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
-								>
-									Sign Up (10 Points)
-								</button>
-								<button
-									onClick={() => earnPoints(2)}
-									className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
-								>
-									Purchase (20 Points)
-								</button>
-								<button
-									onClick={() => earnPoints(3)}
-									className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
-								>
-									Refferal (30 Points)
-								</button>
-							</div>
-						</div>
+						<label
+							htmlFor="points"
+							className="block text-gray-700 font-medium mb-1"
+						>
+							Total Points
+						</label>
+						<input
+							id="points"
+							type="number"
+							value={points}
+							readOnly
+							className="bg-gray-100 border border-gray-300 rounded-md py-2 px-3 w-full"
+						/>
 					</div>
 				</div>
 
-				{/* TO SHOW OFF SOME BACK END FEATURES */}
-				
+				<div className="flex justify-between items-center">
+					<div className="space-x-2">
+						<button
+							onClick={() => earnPoints(1)}
+							className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
+						>
+							Sign Up (10 Points)
+						</button>
+						<button
+							onClick={() => earnPoints(2)}
+							className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
+						>
+							Purchase (20 Points)
+						</button>
+						<button
+							onClick={() => earnPoints(3)}
+							className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
+						>
+							Referral (30 Points)
+						</button>
+					</div>
+				</div>
 				<br />
 				<div className="flex flex-col justify-between items-start space-y-2">
 					<div>
@@ -149,7 +156,7 @@ const LoyaltyRewards = () => {
 							<input
 								className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
 								type="submit"
-								placeholder="Redeem"
+								value="Redeem"
 							/>
 						</form>
 					</div>
@@ -176,7 +183,7 @@ const LoyaltyRewards = () => {
 							<input
 								className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
 								type="submit"
-								placeholder="Add"
+								value="Add"
 							/>
 						</form>
 					</div>
