@@ -18,6 +18,8 @@ export const createUser = async (newID, setUName) => {
 
 		if (realUser) {
 			setUName(allUsers.find((user) => Number(user.id) === Number(newID)).name);
+		} else {
+			alert("User not in DB");
 		}
 
 		if (!userExists && realUser) {
@@ -44,50 +46,108 @@ export const fetchUserPoints = async (uid, setPoints) => {
 	}
 };
 
+export const getActivities = async (setActivities) => {
+	try {
+		const res = await axios.get(
+			"https://cps714-backend.onrender.com/activities/?offset=0&limit=100"
+		);
+		console.log(res.data);
+		setActivities(res.data);
+	} catch (error) {
+		console.error("error fetching activities: ", error);
+	}
+};
+
 export const earnPoints = async (uid, activityID, fetchUserPoints) => {
 	try {
 		await axios.post("https://cps714-backend.onrender.com/activities/", {
 			user_id: uid,
 			activity_id: activityID,
 		});
+		console.log("user id: ", uid, "activity_id: ", activityID);
 		fetchUserPoints(uid);
 	} catch (error) {
+		console.log("user id: ", uid, "activity_id: ", activityID);
 		console.error("Error earning points:", error);
 	}
 };
 
-export const getRedeemed = async (uid, setRedeemEntries) => {
+export const getRewards = async (setRewards) => {
 	try {
+		const res = await axios.get(
+			"https://cps714-backend.onrender.com/rewards/?offset=0&limit=100"
+		);
+		setRewards(res.data);
+	} catch (error) {
+		console.error("error getting rewards: ", error);
+	}
+};
+
+export const getRedeemed = async (uid, rewards, setRedeemEntries) => {
+	try {
+		const rewardsArray = Array.isArray(rewards) ? rewards : [];
+    console.log("rewards are: ", rewards)
 		const response = await axios.get(
 			`https://cps714-backend.onrender.com/redeemed/user/${uid}`
 		);
-		const rewardIds = response.data.map((entry) => entry.id);
-		setRedeemEntries(rewardIds);
+
+		const redeemed = response.data; 
+
+		const matchingNames = redeemed
+			.map((entry) => {
+				const reward = rewardsArray.find(
+					(reward) => reward.id === entry.reward_id
+				);
+				return reward ? reward.name : null; 
+			})
+			.filter((name) => name !== null); 
+
+		setRedeemEntries(matchingNames);
 	} catch (error) {
-		console.error("Error fetching redeemed entries: ", error);
+		console.error("Error fetching redeemed entries:", error);
 	}
 };
 
 export const deleteRedeemed = async (
-	value,
+	rewardsID,
 	fetchUserPoints,
-	getRedeemed,
-	uid
+  uid,
+  getRedeemed
 ) => {
 	try {
-		await axios.delete(`https://cps714-backend.onrender.com/redeemed/${value}`);
-		fetchUserPoints(uid);
+		const redeemedResponse = await axios.get(
+			`https://cps714-backend.onrender.com/redeemed/user/${uid}`
+		);
+
+		const redeemedItem = redeemedResponse.data.find(
+			(entry) => Number(entry.reward_id) === Number(rewardsID)
+		);
+		console.log("data is ", redeemedItem);
+		if (!redeemedItem) {
+			console.error(`No redeemed item found for reward_id: ${rewardsID}`);
+			return;
+		}
+		console.log("deleted redeem #", redeemedItem.id);
+		await axios.delete(
+			`https://cps714-backend.onrender.com/redeemed/${redeemedItem.id}`
+		);
+    console.log(`Deleted redeemed item with id: ${redeemedItem.id}`);
+    fetchUserPoints(uid);
 		getRedeemed(uid);
 	} catch (error) {
 		console.error("Error deleting: ", error);
 	}
 };
 
-export const addRedeemed = async (value, uid, fetchUserPoints, getRedeemed) => {
+export const addRedeemed = async (
+	uid,
+	rewardid,
+	fetchUserPoints,
+	getRedeemed
+) => {
 	try {
 		await axios.post(`https://cps714-backend.onrender.com/redeemed`, {
-			id: value,
-			reward_id: 1,
+			reward_id: rewardid,
 			user_id: uid,
 		});
 		fetchUserPoints(uid);

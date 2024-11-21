@@ -4,34 +4,38 @@ import React, { useState, useEffect, useRef } from "react";
 import {
 	createUser,
 	fetchUserPoints,
+	getActivities,
 	earnPoints,
+	getRewards,
 	getRedeemed,
 	deleteRedeemed,
 	addRedeemed,
-} from "./apihelper";
+} from "./apiHelper";
 
 const LoyaltyRewards = () => {
 	const [uid, setUID] = useState(1);
 	const [uname, setUName] = useState("");
 	const [points, setPoints] = useState(0);
 	const [redeemEntries, setRedeemEntries] = useState([]);
+	const [activities, setActivities] = useState([]);
+	const [rewards, setRewards] = useState([]);
 	const redeemVal = useRef(null);
-	const redeemAddVal = useRef(null);
-	const userid = useRef(1);
+	const userid = useRef(null);
 	useEffect(() => {
 		const initializeData = async () => {
 			try {
-				// Ensure user creation is complete before fetching points and redeemed entries
 				await createUser(userid.current.value, setUName);
 				await fetchUserPoints(uid, setPoints);
-				await getRedeemed(uid, setRedeemEntries);
+				await getActivities(setActivities);
+				await getRewards(setRewards);
+				await getRedeemed(uid, rewards, setRedeemEntries);
 			} catch (error) {
 				console.error("Error initializing data:", error);
 			}
 		};
 
 		initializeData();
-	}, [uid]);
+	}, [uid, rewards.length]);
 
 	return (
 		<div className="w-full mx-auto">
@@ -78,24 +82,41 @@ const LoyaltyRewards = () => {
 				</div>
 
 				<div className="space-x-2 mb-4">
-					<button
-						onClick={() => earnPoints(1)}
-						className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
-					>
-						Sign Up (10 Points)
-					</button>
-					<button
-						onClick={() => earnPoints(2)}
-						className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
-					>
-						Purchase (20 Points)
-					</button>
-					<button
-						onClick={() => earnPoints(3)}
-						className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
-					>
-						Referral (30 Points)
-					</button>
+					{activities.map((activity) => (
+						<button
+							key={activity.id}
+							onClick={() => {
+								console.log(activity.id);
+								earnPoints(uid, Number(activity.id), () =>
+									fetchUserPoints(uid, setPoints)
+								);
+							}}
+							className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
+						>
+              {activity.name} (+ {activity.points_reward} points)
+						</button>
+					))}
+				</div>
+
+				{/* Rewards Section */}
+				<div className="space-x-2 mb-4">
+					{rewards.map((reward) => (
+						<button
+							key={reward.id}
+							onClick={() => {
+								console.log(reward.id);
+								addRedeemed(
+									uid,
+									reward.id,
+									() => fetchUserPoints(uid, setPoints),
+									() => getRedeemed(uid, rewards, setRedeemEntries)
+								);
+							}}
+							className="bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-md"
+						>
+              { reward.id }. {reward.name} (- {reward.points_cost})
+						</button>
+					))}
 				</div>
 
 				<div className="mb-4">
@@ -114,12 +135,25 @@ const LoyaltyRewards = () => {
 					/>
 				</div>
 
-				<form onSubmit={deleteRedeemed} className="mb-4">
+				<form
+					onSubmit={(e) => {
+						e.preventDefault();
+						deleteRedeemed(
+							redeemVal.current.value,
+							() => fetchUserPoints(uid, setPoints),
+							uid,
+							() => getRedeemed(uid, rewards, setRedeemEntries)
+            );
+            redeemVal.current.value = ""; 
+          }}
+          
+					className="mb-4"
+				>
 					<input
 						type="text"
 						ref={redeemVal}
-						id="redeem"
-						placeholder="Enter ID to delete"
+            id="redeem"
+						placeholder="Enter Reward ID to delete (1-6 as you see them listed)"
 						className="bg-gray-100 border border-gray-300 rounded-md py-2 px-3 w-full mb-2"
 					/>
 					<button
@@ -127,21 +161,6 @@ const LoyaltyRewards = () => {
 						className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md"
 					>
 						Delete Redeem Entry
-					</button>
-				</form>
-
-				<form onSubmit={addRedeemed}>
-					<input
-						type="text"
-						ref={redeemAddVal}
-						placeholder="Enter ID to add"
-						className="bg-gray-100 border border-gray-300 rounded-md py-2 px-3 w-full mb-2"
-					/>
-					<button
-						type="submit"
-						className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md"
-					>
-						Add Redeem Entry
 					</button>
 				</form>
 			</div>
